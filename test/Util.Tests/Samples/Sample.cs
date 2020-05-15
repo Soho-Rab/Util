@@ -17,6 +17,7 @@ namespace Util.Tests.Samples {
         /// </summary>
         public Sample() {
             StringList = new List<string>();
+            StringArray = StringList.ToArray();
         }
 
         /// <summary>
@@ -142,6 +143,14 @@ namespace Util.Tests.Samples {
         /// 字符串列表
         /// </summary>
         public List<string> StringList { get; set; }
+        /// <summary>
+        /// 字符串数据
+        /// </summary>
+        public string[] StringArray { get; set; }
+        /// <summary>
+        /// Guid值
+        /// </summary>
+        public Guid GuidValue { get; set; }
 
         /// <summary>
         /// 测试2
@@ -149,18 +158,24 @@ namespace Util.Tests.Samples {
         public Sample2 Test2 { get; set; }
 
         /// <summary>
+        /// 测试3
+        /// </summary>
+        public Sample3Copy Test3 { get; set; }
+
+        /// <summary>
+        /// 导航属性
+        /// </summary>
+        public List<Sample3Copy> TestList { get; set; }
+
+        /// <summary>
         /// 静态属性
         /// </summary>
-        public static string StaticString {
-            get { return "TestStaticString"; }
-        }
+        public static string StaticString => "TestStaticString";
 
         /// <summary>
         /// 静态对象
         /// </summary>
-        public static Sample2 StaticSample {
-            get { return new Sample2() {StringValue = "TestStaticSample" };}
-        }
+        public static Sample2 StaticSample => new Sample2 {StringValue = "TestStaticSample" };
 
         /// <summary>
         /// 创建测试实例1

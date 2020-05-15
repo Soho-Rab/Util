@@ -5,13 +5,14 @@ using Util.Biz.Payments.Alipay.Parameters;
 using Util.Biz.Payments.Alipay.Parameters.Requests;
 using Util.Biz.Payments.Alipay.Services.Base;
 using Util.Biz.Payments.Core;
+using Util.Biz.Payments.Properties;
 using Util.Exceptions;
 
 namespace Util.Biz.Payments.Alipay.Services {
     /// <summary>
     /// 支付宝条码支付服务
     /// </summary>
-    public class AlipayBarcodePayService : AlipayServiceBase, IAlipayBarcodePayService {
+    public class AlipayBarcodePayService : AlipayPayServiceBase, IAlipayBarcodePayService {
         /// <summary>
         /// 初始化支付宝条码支付服务
         /// </summary>
@@ -39,13 +40,6 @@ namespace Util.Biz.Payments.Alipay.Services {
         /// </summary>
         protected override string GetMethod() {
             return "alipay.trade.pay";
-        }
-
-        /// <summary>
-        /// 获取支付方式
-        /// </summary>
-        protected override PayWay GetPayWay() {
-            return PayWay.AlipayBarcodePay;
         }
 
         /// <summary>

@@ -12,7 +12,7 @@ namespace Util.Applications {
         /// 创建
         /// </summary>
         /// <param name="request">创建参数</param>
-        public string Create( TCreateRequest request ) {
+        public virtual string Create( TCreateRequest request ) {
             if( request == null )
                 throw new ArgumentNullException( nameof( request ) );
             var entity = ToEntityFromCreateRequest( request );
@@ -49,7 +49,7 @@ namespace Util.Applications {
         /// 创建
         /// </summary>
         /// <param name="request">创建参数</param>
-        public async Task<string> CreateAsync( TCreateRequest request ) {
+        public virtual async Task<string> CreateAsync( TCreateRequest request ) {
             if( request == null )
                 throw new ArgumentNullException( nameof( request ) );
             var entity = ToEntityFromCreateRequest( request );
@@ -64,16 +64,32 @@ namespace Util.Applications {
         /// </summary>
         protected async Task CreateAsync( TEntity entity ) {
             CreateBefore( entity );
+            await CreateBeforeAsync( entity );
             entity.Init();
             await _repository.AddAsync( entity );
             CreateAfter( entity );
+            await CreateAfterAsync( entity );
+        }
+
+        /// <summary>
+        /// 创建前操作
+        /// </summary>
+        protected virtual Task CreateBeforeAsync( TEntity entity ) {
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// 创建后操作
+        /// </summary>
+        protected virtual Task CreateAfterAsync( TEntity entity ) {
+            return Task.CompletedTask;
         }
 
         /// <summary>
         /// 修改
         /// </summary>
         /// <param name="request">修改参数</param>
-        public void Update( TUpdateRequest request ) {
+        public virtual void Update( TUpdateRequest request ) {
             if( request == null )
                 throw new ArgumentNullException( nameof( request ) );
             var entity = ToEntityFromUpdateRequest( request );
@@ -124,14 +140,14 @@ namespace Util.Applications {
         /// <param name="entity">实体</param>
         /// <param name="changeValues">变更值集合</param>
         protected virtual void UpdateAfter( TEntity entity, ChangeValueCollection changeValues ) {
-            Log.BusinessId( entity.Id.SafeString() ).Content( changeValues.SafeString() );
+            Log.BusinessId( entity.Id.SafeString() ).Content( $"Id:{entity.Id},{changeValues}" );
         }
 
         /// <summary>
         /// 修改
         /// </summary>
         /// <param name="request">修改参数</param>
-        public async Task UpdateAsync( TUpdateRequest request ) {
+        public virtual async Task UpdateAsync( TUpdateRequest request ) {
             if( request == null )
                 throw new ArgumentNullException( nameof( request ) );
             var entity = ToEntityFromUpdateRequest( request );
@@ -149,15 +165,34 @@ namespace Util.Applications {
                 throw new ArgumentNullException( nameof( oldEntity ) );
             var changes = oldEntity.GetChanges( entity );
             UpdateBefore( entity );
+            await UpdateBeforeAsync( entity );
             await _repository.UpdateAsync( entity );
             UpdateAfter( entity, changes );
+            await UpdateAfterAsync( entity, changes );
+        }
+
+        /// <summary>
+        /// 修改前操作
+        /// </summary>
+        /// <param name="entity">实体</param>
+        protected virtual Task UpdateBeforeAsync( TEntity entity ) {
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// 修改后操作
+        /// </summary>
+        /// <param name="entity">实体</param>
+        /// <param name="changeValues">变更值集合</param>
+        protected virtual Task UpdateAfterAsync( TEntity entity, ChangeValueCollection changeValues ) {
+            return Task.CompletedTask;
         }
 
         /// <summary>
         /// 保存
         /// </summary>
         /// <param name="request">参数</param>
-        public void Save( TRequest request ) {
+        public virtual async Task SaveAsync( TRequest request ) {
             if( request == null )
                 throw new ArgumentNullException( nameof( request ) );
             SaveBefore( request );
@@ -165,11 +200,11 @@ namespace Util.Applications {
             if( entity == null )
                 throw new ArgumentNullException( nameof( entity ) );
             if( IsNew( request, entity ) ) {
-                Create( entity );
+                await CreateAsync( entity );
                 request.Id = entity.Id.ToString();
             }
             else
-                Update( entity );
+                await UpdateAsync( entity );
         }
 
         /// <summary>
@@ -189,13 +224,6 @@ namespace Util.Applications {
         }
 
         /// <summary>
-        /// 保存后操作
-        /// </summary>
-        protected virtual void SaveAfter() {
-            WriteLog( $"保存{EntityDescription}成功" );
-        }
-
-        /// <summary>
         /// 提交后操作 - 该方法由工作单元拦截器调用
         /// </summary>
         public void CommitAfter() {
@@ -203,22 +231,10 @@ namespace Util.Applications {
         }
 
         /// <summary>
-        /// 保存
+        /// 保存后操作
         /// </summary>
-        /// <param name="request">参数</param>
-        public async Task SaveAsync( TRequest request ) {
-            if( request == null )
-                throw new ArgumentNullException( nameof( request ) );
-            SaveBefore( request );
-            var entity = ToEntity( request );
-            if( entity == null )
-                throw new ArgumentNullException( nameof( entity ) );
-            if( IsNew( request, entity ) ) {
-                await CreateAsync( entity );
-                request.Id = entity.Id.ToString();
-            }
-            else
-                await UpdateAsync( entity );
+        protected virtual void SaveAfter() {
+            WriteLog( $"保存{EntityDescription}成功" );
         }
     }
 }

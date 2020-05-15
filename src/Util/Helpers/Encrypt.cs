@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using Util.Helpers.Internal;
@@ -10,7 +11,7 @@ namespace Util.Helpers {
     /// 1. AES加密整理自支付宝SDK
     /// 2. RSA加密采用 https://github.com/stulzq/DotnetCore.RSA/blob/master/DotnetCore.RSA/RSAHelper.cs
     /// </summary>
-    public static class Encrypt {
+    public static partial class Encrypt {
 
         #region Md5加密
 
@@ -227,7 +228,7 @@ namespace Util.Helpers {
         public static string AesEncrypt( string value, string key, Encoding encoding ) {
             if( string.IsNullOrWhiteSpace( value ) || string.IsNullOrWhiteSpace( key ) )
                 return string.Empty;
-            var rijndaelManaged = CreateRijndaelManaged( key );
+            var rijndaelManaged = CreateRijndaelManaged( key, encoding );
             using( var transform = rijndaelManaged.CreateEncryptor( rijndaelManaged.Key, rijndaelManaged.IV ) ) {
                 return GetEncryptResult( value, encoding, transform );
             }
@@ -236,10 +237,10 @@ namespace Util.Helpers {
         /// <summary>
         /// 创建RijndaelManaged
         /// </summary>
-        private static RijndaelManaged CreateRijndaelManaged( string key ) {
+        private static RijndaelManaged CreateRijndaelManaged( string key, Encoding encoding, CipherMode cipherMode = CipherMode.CBC ) {
             return new RijndaelManaged {
-                Key = System.Convert.FromBase64String( key ),
-                Mode = CipherMode.CBC,
+                Key = encoding.GetBytes( key ),
+                Mode = cipherMode,
                 Padding = PaddingMode.PKCS7,
                 IV = Iv
             };
@@ -268,10 +269,11 @@ namespace Util.Helpers {
         /// <param name="value">加密后的值</param>
         /// <param name="key">密钥</param>
         /// <param name="encoding">编码</param>
-        public static string AesDecrypt( string value, string key, Encoding encoding ) {
+        /// <param name="cipherMode">密码模式</param>
+        public static string AesDecrypt( string value, string key, Encoding encoding, CipherMode cipherMode = CipherMode.CBC ) {
             if( string.IsNullOrWhiteSpace( value ) || string.IsNullOrWhiteSpace( key ) )
                 return string.Empty;
-            var rijndaelManaged = CreateRijndaelManaged( key );
+            var rijndaelManaged = CreateRijndaelManaged( key, encoding, cipherMode );
             using( var transform = rijndaelManaged.CreateDecryptor( rijndaelManaged.Key, rijndaelManaged.IV ) ) {
                 return GetDecryptResult( value, encoding, transform );
             }
@@ -379,6 +381,33 @@ namespace Util.Helpers {
                 return false;
             var rsa = new RsaHelper( type, encoding, publicKey: publicKey );
             return rsa.Verify( value, sign );
+        }
+
+        #endregion
+
+        #region HmacSha256加密
+
+        /// <summary>
+        /// HMACSHA256加密
+        /// </summary>
+        /// <param name="value">值</param>
+        /// <param name="key">密钥</param>
+        public static string HmacSha256( string value, string key ) {
+            return HmacSha256( value, key,Encoding.UTF8 );
+        }
+
+        /// <summary>
+        /// HMACSHA256加密
+        /// </summary>
+        /// <param name="value">值</param>
+        /// <param name="key">密钥</param>
+        /// <param name="encoding">字符编码</param>
+        public static string HmacSha256( string value,string key, Encoding encoding ) {
+            if( string.IsNullOrWhiteSpace( value ) || string.IsNullOrWhiteSpace( key ) )
+                return string.Empty;
+            var sha256 = new HMACSHA256( encoding.GetBytes( key ) );
+            var hash = sha256.ComputeHash( encoding.GetBytes( value ) );
+            return string.Join( "", hash.ToList().Select( t => t.ToString( "x2" ) ).ToArray() );
         }
 
         #endregion

@@ -12,13 +12,22 @@ namespace Util.Biz.Payments.Alipay.Parameters {
         /// 初始化支付参数
         /// </summary>
         /// <param name="param">支付参数</param>
-        public AlipayContentBuilder Init( PayParamBase param ) {
+        public AlipayContentBuilder Init( PayParam param ) {
             if( param == null )
                 return this;
             return OutTradeNo( param.OrderId )
                 .Subject( param.Subject )
                 .TotalAmount( param.Money )
                 .TimeoutExpress( param.Timeout );
+        }
+
+        /// <summary>
+        /// 设置支付宝交易号
+        /// </summary>
+        /// <param name="tradeId">支付宝交易号</param>
+        public AlipayContentBuilder TradeNo( string tradeId ) {
+            Add( AlipayConst.TradeNo, tradeId );
+            return this;
         }
 
         /// <summary>

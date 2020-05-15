@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace Util.Tests.Samples {
@@ -31,8 +32,20 @@ namespace Util.Tests.Samples {
         /// </summary>
         public int IntValue { get; set; }
         /// <summary>
+        /// bool值
+        /// </summary>
+        public bool BoolValue { get; set; }
+        /// <summary>
+        /// 可空bool值
+        /// </summary>
+        public bool? NullableBoolValue { get; set; }
+        /// <summary>
         /// 导航属性
         /// </summary>
         public Sample3 Test3 { get; set; }
+        /// <summary>
+        /// 导航属性
+        /// </summary>
+        public List<Sample3> TestList { get; set; }
     }
 }
